@@ -1,0 +1,38 @@
+{
+  "name": "px-to-rem-loader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/bundle.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "del-cli lib",
+    "build": "npm run clean && npm run compile && rollup lib/index.js --file lib/bundle.js --format cjs",
+    "compile": "tsc --outDir lib -d",
+    "preversion": "npm run build",
+    "postversion": "git push origin master && git push origin --tags && npm publish",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ryanypm/px-to-rem-loader"
+  },
+  "keywords": [
+    "px-to-rem-loader"
+  ],
+  "author": "ryan",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "del-cli": "^1.1.0",
+    "rollup": "^0.67.0",
+    "typescript": "^3.1.6",
+    "jest": "^23.6.0"
+  },
+  "dependencies": {
+    "loader-utils": "^1.1.0"
+  }
+}
