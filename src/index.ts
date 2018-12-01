@@ -82,14 +82,27 @@ const createReplace = (reg: RegExp, content: string, convertTypeReg: RegExp, opt
     return content.replace(reg, _source);
 }
 
+const extendsionNames = ['scss', 'sass', 'less', 'css'];
+
+const getExtensionName = (url: string) => {
+    if (!url) return '';
+    const index = url.lastIndexOf('.');
+    return url.substring(index + 1);
+}
+
 export default function(source: any, params?: Options): string {
     const options: object = loaderUtils.getOptions(this ? this : { query: params || {} });
     const defaults: any = Object.assign({}, defaultProp, options);
 
     const convertTypeReg: RegExp = covertTypeRegs[defaults.convertType];
     if (defaults.range === MatchRangeEnum.Vue) {
-        let result: string = source;
-        [sourceRegs[MatchRangeEnum.Template], sourceRegs[MatchRangeEnum.Style]].forEach(reg => {
+        let result: string = source, regs = [];
+        if (this && extendsionNames.includes(getExtensionName(this.resourcePath))) {
+            regs = [sourceRegs[MatchRangeEnum.All]];
+        } else {
+            regs = [sourceRegs[MatchRangeEnum.Template], sourceRegs[MatchRangeEnum.Style]];
+        }
+        regs.forEach(reg => {
             result = createReplace(reg, result, convertTypeReg, defaults);
         });
         return result;
