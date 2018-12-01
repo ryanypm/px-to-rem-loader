@@ -2,13 +2,13 @@ const pxtorem = require('./lib/bundle.js');
 
 const testString = `<template>
     <div>
-        <div style="width: @rem(20)" class="main-container"></div>
+        <div style="width: rem(20)" class="main-container"></div>
     </div>
 </template>
 
 <script>
 export default {
-
+    width: rem(20)
 }
 </script>
 

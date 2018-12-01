@@ -10,7 +10,7 @@ enum ConvertTypeEnum {
 }
 
 enum MatchRangeEnum {
-    /**匹配 style 和 template */
+    /**匹配 全部 */
     All = 'all',
     /**匹配html标签内 */
     Html = 'html',
@@ -18,6 +18,7 @@ enum MatchRangeEnum {
     Style = 'style',
     /**匹配template */
     Template = 'template',
+    Vue = 'vue',
 }
 
 interface Options {
@@ -36,13 +37,13 @@ const defaultProp: Options = {
     /**单位精度 */
     precision: 5,
     /**匹配范围 */
-    range: MatchRangeEnum.All,
+    range: MatchRangeEnum.Vue,
     /**自动删除小数点0. */
     autoRemovePrefixZero: true,
 };
 
 const sourceRegs: object = {
-    [MatchRangeEnum.All]: /<template>([\s\S]+)<\/template>|<style([\s\S]+)?>[\s\S]+<\/style>/ig,
+    [MatchRangeEnum.All]: /[\s\S]+/ig,
     [MatchRangeEnum.Html]: /<html[\s\S]+>[\s\S]+<\/html>/ig,
     [MatchRangeEnum.Style]: /<style[\s\S]+>[\s\S]+<\/style>/ig,
     [MatchRangeEnum.Template]: /<template>([\s\S]+)<\/template>/ig,
@@ -57,34 +58,43 @@ const numberToFixed = (value: number, n: number):  number => {
     return Math.round(value * Math.pow(10, n)) / Math.pow(10, n);
 }
 
-export default function(source: any): string {
-    const options: object = loaderUtils.getOptions(this ? this : { query: {} });
+const createReplace = (reg: RegExp, content: string, convertTypeReg: RegExp, options: Options) => {
+    let _source = '';
+    if (reg.test(content)) {
+        const match = content.match(reg);
+        _source = match ? match[0] : '';
+    }
+
+    if (!_source) return content;
+
+    _source = _source.replace(convertTypeReg, ($0, $1): string => {
+        if (!$1) return;
+        const pixels: number = parseFloat($1);
+        let value: string = numberToFixed(pixels / options.rootFontSize, options.precision).toString();
+
+        // 自动删除0.
+        if (options.autoRemovePrefixZero && value.startsWith('0.')) {
+            value = value.substring(1);
+        }
+        return `${value}rem`;
+    });
+
+    return content.replace(reg, _source);
+}
+
+export default function(source: any, params?: Options): string {
+    const options: object = loaderUtils.getOptions(this ? this : { query: params || {} });
     const defaults: any = Object.assign({}, defaultProp, options);
 
-    let _source: string = '';
-    const sourceReg: RegExp = sourceRegs[defaults.range];
-    // 先判断是否存在符合条件的项
-    if (sourceReg.test(source)) {
-        // _source = sourceReg.exec(source).input;
-        const match = source.match(sourceReg);
-        _source = match ? match.join('') : '';
-    }
-
     const convertTypeReg: RegExp = covertTypeRegs[defaults.convertType];
-    if (convertTypeReg.test(_source)) {
-        _source = _source.replace(convertTypeReg, ($0, $1): string => {
-            if (!$1) return;
-            const pixels: number = parseFloat($1);
-            let value: string = numberToFixed(pixels / defaults.rootFontSize, defaults.precision).toString();
-
-            // 自动删除0.
-            if (defaults.autoRemovePrefixZero && value.startsWith('0.')) {
-                value = value.substring(1);
-            }
-            return `${value}rem`;
+    if (defaults.range === MatchRangeEnum.Vue) {
+        let result: string = source;
+        [sourceRegs[MatchRangeEnum.Template], sourceRegs[MatchRangeEnum.Style]].forEach(reg => {
+            result = createReplace(reg, result, convertTypeReg, defaults);
         });
-        return source.replace(sourceReg, _source);
+        return result;
+    } else {
+        const sourceReg: RegExp = sourceRegs[defaults.range];
+        return createReplace(sourceReg, source, convertTypeReg, defaults);
     }
-
-    return source;
 };
