@@ -1,6 +1,6 @@
 {
   "name": "super-px-to-rem-loader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "lib/bundle.js",
   "module": "lib/index.js",
@@ -24,8 +24,8 @@
   "keywords": [
     "super-px-to-rem-loader"
   ],
-  "publishConfig" : {
-    "registry" : "https://registry.npmjs.org/"
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   },
   "author": "ryan",
   "license": "UNLICENSED",
