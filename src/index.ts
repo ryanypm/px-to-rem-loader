@@ -45,7 +45,7 @@ const defaultProp: Options = {
 const sourceRegs: object = {
     [MatchRangeEnum.All]: /[\s\S]+/ig,
     [MatchRangeEnum.Html]: /<html[\s\S]+>[\s\S]+<\/html>/ig,
-    [MatchRangeEnum.Style]: /<style[\s\S]+>[\s\S]+<\/style>/ig,
+    [MatchRangeEnum.Style]: /<style([\s\S]+)?>[\s\S]+<\/style>/ig,
     [MatchRangeEnum.Template]: /<template>([\s\S]+)<\/template>/ig,
 }
 
